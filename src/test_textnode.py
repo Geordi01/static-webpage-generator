@@ -11,7 +11,7 @@ class TestTextNode(unittest.TestCase):
 
     def test_eq_false(self):
         node = TextNode("This is a text node", TextType.BOLD)
-        node2 = TextNode("This is a text node", TextType.NORMAL)
+        node2 = TextNode("This is a text node", TextType.TEXT)
         self.assertNotEqual(node, node2)
     
     def test_eq_false2(self):
@@ -30,7 +30,7 @@ class TestTextNode(unittest.TestCase):
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_text(self):
-        node = TextNode("This is a text node", TextType.NORMAL)
+        node = TextNode("This is a text node", TextType.TEXT)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "This is a text node")
@@ -48,11 +48,11 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         self.assertEqual(text_node_to_html_node(node).to_html(), "<code>This is a text node</code>")
 
     def test_links(self):
-        node = TextNode("This is a text node", TextType.LINKS, "https://boot.dev")
+        node = TextNode("This is a text node", TextType.LINK, "https://boot.dev")
         self.assertEqual(text_node_to_html_node(node).to_html(), '<a href="https://boot.dev">This is a text node</a>')
 
     def test_images(self):
-        node = TextNode("This is a text node", TextType.IMAGES, "https://boot.dev")
+        node = TextNode("This is a text node", TextType.IMAGE, "https://boot.dev")
         self.assertEqual(text_node_to_html_node(node).to_html(), '<img src="https://boot.dev" alt="This is a text node"></img>')
 
 if __name__ == "__main__":
