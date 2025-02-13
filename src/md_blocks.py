@@ -1,6 +1,9 @@
+import os
+
 from htmlnode import ParentNode
 from textnode import text_node_to_html_node
 from delimiter import text_to_textnodes
+from pathlib import Path
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -8,6 +11,14 @@ block_type_code = "code"
 block_type_quote = "quote"
 block_type_olist = "ordered_list"
 block_type_ulist = "unordered_list"
+
+def extract_title(markdown):
+    lines = markdown.split("\n")
+    if len(lines) == 0:
+        return None
+    if not lines[0].startswith("# "):
+        return None
+    return lines[0][2:]
 
 def markdown_to_blocks(markdown):
     block_strings = []
@@ -138,12 +149,36 @@ def block_to_olist_node(block):
         html_items.append(ParentNode("li", children))
     return ParentNode("ol", html_items)
 
-md = """
-> This is a
-> blockquote block
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path) as md_file:
+        md_content = md_file.read()
+        html_string = markdown_to_html_node(md_content).to_html()
+        title = extract_title(md_content)
+    with open(template_path) as template_file:
+        template_content = template_file.read()
+        replace_template_title = template_content.replace("{{ Title }}", title)
+        replace_template_content = replace_template_title.replace("{{ Content }}", html_string)
+        
+    dir_path = os.path.dirname(dest_path)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
 
-this is paragraph text
+    with open(dest_path, "w") as dest_file:
+        dest_file.write(replace_template_content)
 
-"""
-node = markdown_to_html_node(md)
-print(node.to_html())
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    content_path = Path(dir_path_content)
+    dest_path = Path(dest_dir_path)
+
+    for entry in os.listdir(dir_path_content):
+        source = content_path / entry
+        destination = dest_path / entry
+
+        if source.is_file() and source.suffix == '.md':
+            html_path = destination.with_suffix('.html')
+            html_path.parent.mkdir(parents=True, exist_ok=True)
+            generate_page(source, template_path, html_path)
+        elif source.is_dir():
+            destination.mkdir(parents=True, exist_ok=True)
+            generate_pages_recursive(source, template_path, destination)

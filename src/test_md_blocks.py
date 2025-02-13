@@ -2,6 +2,7 @@ import unittest
 
 from md_blocks import (
     markdown_to_html_node,
+    extract_title,
     markdown_to_blocks,
     block_to_block_type,
     block_type_paragraph,
@@ -170,6 +171,11 @@ this is paragraph text
             html,
             "<div><pre><code>This is a code block\n</code></pre><p>this is paragraph text</p></div>",
         )
+
+    def test_extract_title(self):
+        md = "# this is an h1"
+        title = extract_title(md)
+        self.assertEqual(title, "this is an h1")
 
 if __name__ == "__main__":
     unittest.main()
