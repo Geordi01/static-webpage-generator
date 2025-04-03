@@ -149,7 +149,7 @@ def block_to_olist_node(block):
         html_items.append(ParentNode("li", children))
     return ParentNode("ol", html_items)
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as md_file:
         md_content = md_file.read()
@@ -157,17 +157,19 @@ def generate_page(from_path, template_path, dest_path):
         title = extract_title(md_content)
     with open(template_path) as template_file:
         template_content = template_file.read()
-        replace_template_title = template_content.replace("{{ Title }}", title)
-        replace_template_content = replace_template_title.replace("{{ Content }}", html_string)
+        template_content = template_content.replace("{{ Title }}", title)
+        template_content = template_content.replace("{{ Content }}", html_string)
+        template_content = template_content.replace('href="/', 'href="' + basepath)
+        template_content = template_content.replace('src="/', 'src="' + basepath)
         
     dir_path = os.path.dirname(dest_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
     with open(dest_path, "w") as dest_file:
-        dest_file.write(replace_template_content)
+        dest_file.write(template_content)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     content_path = Path(dir_path_content)
     dest_path = Path(dest_dir_path)
 
@@ -178,7 +180,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
         if source.is_file() and source.suffix == '.md':
             html_path = destination.with_suffix('.html')
             html_path.parent.mkdir(parents=True, exist_ok=True)
-            generate_page(source, template_path, html_path)
+            generate_page(source, template_path, html_path, basepath)
         elif source.is_dir():
             destination.mkdir(parents=True, exist_ok=True)
-            generate_pages_recursive(source, template_path, destination)
+            generate_pages_recursive(source, template_path, destination, basepath)
