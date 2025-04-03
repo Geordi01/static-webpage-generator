@@ -155,7 +155,7 @@ def generate_page(from_path, template_path, dest_path, basepath):
         md_content = md_file.read()
         html_string = markdown_to_html_node(md_content).to_html()
         title = extract_title(md_content)
-    with open(template_path) as template_file:
+    with open(template_path, "r") as template_file:
         template_content = template_file.read()
         template_content = template_content.replace("{{ Title }}", title)
         template_content = template_content.replace("{{ Content }}", html_string)
